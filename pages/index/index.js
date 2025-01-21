@@ -1,49 +1,46 @@
 // index.js
-const defaultAvatarUrl = 'https://mmbiz.qpic.cn/mmbiz/icTdbqWNOwNRna42FI242Lcia07jQodd2FJGIYQfG0LAJGFxM4FbnQP6yfMxBgJ0F3YRqJCJ1aPAK2dQagdusBZg/0'
-
 Page({
-  data: {
-    motto: 'Hello World',
-    userInfo: {
-      avatarUrl: defaultAvatarUrl,
-      nickName: '',
+    data: {
+      userCode: '',
+      errorMessage: ''
     },
-    hasUserInfo: false,
-    canIUseGetUserProfile: wx.canIUse('getUserProfile'),
-    canIUseNicknameComp: wx.canIUse('input.type.nickname'),
-  },
-  bindViewTap() {
-    wx.navigateTo({
-      url: '../logs/logs'
-    })
-  },
-  onChooseAvatar(e) {
-    const { avatarUrl } = e.detail
-    const { nickName } = this.data.userInfo
-    this.setData({
-      "userInfo.avatarUrl": avatarUrl,
-      hasUserInfo: nickName && avatarUrl && avatarUrl !== defaultAvatarUrl,
-    })
-  },
-  onInputChange(e) {
-    const nickName = e.detail.value
-    const { avatarUrl } = this.data.userInfo
-    this.setData({
-      "userInfo.nickName": nickName,
-      hasUserInfo: nickName && avatarUrl && avatarUrl !== defaultAvatarUrl,
-    })
-  },
-  getUserProfile(e) {
-    // 推荐使用wx.getUserProfile获取用户信息，开发者每次通过该接口获取用户个人信息均需用户确认，开发者妥善保管用户快速填写的头像昵称，避免重复弹窗
-    wx.getUserProfile({
-      desc: '展示用户信息', // 声明获取用户个人信息后的用途，后续会展示在弹窗中，请谨慎填写
-      success: (res) => {
-        console.log(res)
-        this.setData({
-          userInfo: res.userInfo,
-          hasUserInfo: true
-        })
-      }
-    })
-  },
-})
+    getUserCode: function () {
+      var that = this;
+      wx.login({
+        success: function (loginRes) {
+          if (loginRes.code) {
+            console.log('用户登录凭证 code:', loginRes.code);
+            that.setData({
+              userCode: loginRes.code
+            });
+          } else {
+            that.setData({
+              errorMessage: '登录失败：' + loginRes.errMsg
+            });
+            console.error('登录失败！' + loginRes.errMsg);
+          }
+        }
+      });
+    },
+    copyCode: function () {
+      var userCode = this.data.userCode;
+      wx.setClipboardData({
+        data: userCode,
+        success: function () {
+          wx.showToast({
+            title: '复制成功',
+            icon: 'success',
+            duration: 2000
+          });
+        },
+        fail: function (err) {
+          wx.showToast({
+            title: '复制失败',
+            icon: 'none',
+            duration: 2000
+          });
+          console.error('复制失败:', err);
+        }
+      });
+    }
+  });
